@@ -9,14 +9,18 @@
 
 class Camera {
 	float m_Left, m_Right, m_Bottom, m_Top;
+    float m_Rotation = 0.0f;
+    glm::mat4 projectionMatrix;
+    glm::mat4 viewMatrix;
 
 public:
-    Camera(float left, float right, float bottom, float top)
-        : m_Left(left), m_Right(right), m_Bottom(bottom), m_Top(top) {}
+    Camera(float left, float right, float bottom, float top);
 
     void pan(float dx, float dy);
     void zoom(float factor, float world_x, float world_y);
-    glm::mat4 getProjectionMatrix() const;
+    void rotate();
+
+    glm::mat4 getMVPMatrix() const;
 
     float getLeft() const;
     float getRight() const;

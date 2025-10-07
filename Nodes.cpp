@@ -19,7 +19,11 @@ glm::vec2 projectLatLong(double lat, double lon) {
 
 Nodes::Nodes(json& map_data)
 {
-	std::vector<glm::vec3> vertices;
+	std::vector<std::pair<long long, glm::vec3>> projected_vertices_pair;
+	float min_x = std::numeric_limits<float>::max();
+	float max_x = std::numeric_limits<float>::lowest();
+	float min_y = std::numeric_limits<float>::max();
+	float max_y = std::numeric_limits<float>::lowest();
 	if (map_data.contains("elements")) {
 		for (const auto& element : map_data["elements"]) {
 			if (element["type"] == "node") {
@@ -28,18 +32,17 @@ Nodes::Nodes(json& map_data)
 					double lat_double = std::stod(element["lat"].dump());
 					double lon_double = std::stod(element["lon"].dump());
 					glm::vec2 projectedCoords = projectLatLong(lat_double, lon_double);
-					min_lat = std::min(min_lat, lat_double);
-					max_lat = std::max(max_lat, lat_double);
+					
+					min_x = std::min(min_x, projectedCoords.x);
+					max_x = std::max(max_x, projectedCoords.x);
 
-					min_lon = std::min(min_lon, lon_double);
-					max_lon = std::max(max_lon, lon_double);
+					min_y = std::min(min_y, projectedCoords.y);
+					max_y = std::max(max_y, projectedCoords.y);
 
-					glm::vec3 vertexPos = glm::vec3(lon_double, lat_double, 0.0f);
-					Node* currNode = new Node(id, vertexPos);
-					nodes.push_back(currNode);
-					nodeMap[id] = currNode;
+					glm::vec3 vertexPos = glm::vec3(projectedCoords.x, projectedCoords.y, 0.0f);
+					
 					//std::cout << nodes.back().first << " " << nodes.back().second << "\n";
-					vertices.push_back(vertexPos);
+					projected_vertices_pair.push_back({ id, vertexPos });
 				}
 				catch (std::exception& e) {
 					std::cerr << e.what();
@@ -47,20 +50,44 @@ Nodes::Nodes(json& map_data)
 			}
 		}
 	}
-	//for (glm::vec3& point : nodes) {
+	//std::vector<glm::vec3> normalized_vertices;
+	//for (glm::vec3& point : projected_vertices) {
 	//	// Transform longitude (x)
-	//	point.x = static_cast<float>((point.x - min_lon) / (max_lon - min_lon) * 1.8 - 0.9);
+	//	//point.x = static_cast<float>((point.x - min_lon) / (max_lon - min_lon) * 1.8 - 0.9);
 	//	// Transform latitude (y)
-	//	point.y = static_cast<float>((point.y - min_lat) / (max_lat - min_lat) * 1.8 - 0.9);
+	//	//point.y = static_cast<float>((point.y - min_lat) / (max_lat - min_lat) * 1.8 - 0.9);
 	//	//std::cout << "Transformed point: (" << point.x << ", " << point.y << ")" << std::endl;
+	//	double normalized_x = (point.x - min_lon) / (max_lon - min_lon) * 2.0 - 1.0;
+	//	double normalized_y = (point.y - min_lat) / (max_lat - min_lat) * 2.0 - 1.0;
+
+	//	normalized_vertices.push_back(glm::vec3(normalized_x, normalized_y, 0.0f));
 	//}
+	float center_x = (min_x + max_x) / 2.0f;
+	float center_y = (min_y + max_y) / 2.0f;
+
+	std::vector<glm::vec3> centered_vertices;
+	for (const auto& vp : projected_vertices_pair) {
+		long long ID = vp.first;
+		glm::vec3 vertexPos = vp.second;
+		glm::vec3 centeredVertexPos = glm::vec3(vertexPos.x - center_x, vertexPos.y - center_y, vertexPos.z);
+		centered_vertices.push_back(centeredVertexPos);
+
+		Node* currNode = new Node(ID, centeredVertexPos);
+		nodes.push_back(currNode);
+		nodeMap[ID] = currNode;
+	}
 	mainVAO.Bind();
-	VBO mainVBO(vertices);
+	VBO mainVBO(centered_vertices);
 
 	mainVAO.LinkAttrib(mainVBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), (void*)0);
 
 	mainVAO.Unbind();
 	mainVBO.Unbind();
+
+	min_lon = (float)(min_x - center_x);
+	max_lon = (float)(max_x - center_x);
+	min_lat = (float)(min_y - center_y);
+	max_lat = (float)(max_y - center_y);
 }
 
 std::vector<glm::vec3> Nodes::getVertices()

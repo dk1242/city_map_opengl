@@ -4,9 +4,18 @@ Application::Application(GLFWwindow* window, Camera* camera)
 	:m_Window(window), m_Camera(camera)
 {
 	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetKeyCallback(m_Window, keyCallback);
 	glfwSetMouseButtonCallback(m_Window, mouseButtonCallback);
 	glfwSetCursorPosCallback(m_Window, cursorPositionCallback);
 	glfwSetScrollCallback(m_Window, scrollCallback);
+}
+
+void Application::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
+	if (app) {
+		app->handleKey(key, scancode, action, mods);
+	}
 }
 
 void Application::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
@@ -28,6 +37,14 @@ void Application::scrollCallback(GLFWwindow* window, double xoffset, double yoff
 	//std::cout << "Mouse scroll event detected." << std::endl;
 	auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
 	if (app) app->handleScroll(window, xoffset, yoffset);
+}
+
+void Application::handleKey(int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+		// Trigger the rotation on the Camera
+		m_Camera->rotate();
+	}
 }
 
 void Application::handleMouseButton(GLFWwindow* window, int button, int action, int mods)

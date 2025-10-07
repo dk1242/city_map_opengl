@@ -15,10 +15,12 @@ public:
     Application(GLFWwindow* window, Camera* camera);
 
 private:
+    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     static void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
     static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+    void handleKey(int key, int scancode, int action, int mods);
     void handleMouseButton(GLFWwindow* window, int button, int action, int mods);
     void handleCursorPosition(GLFWwindow* window, double xpos, double ypos);
     void handleScroll(GLFWwindow* window, double xoffset, double yoffset);

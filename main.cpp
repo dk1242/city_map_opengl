@@ -81,7 +81,7 @@ int main()
 
 		GLint proj_loc = glGetUniformLocation(defShader.ID, "projection");
 		glUniformMatrix4fv(glGetUniformLocation(defShader.ID, "projection"), 1, GL_FALSE,
-			glm::value_ptr(camera.getProjectionMatrix()));
+			glm::value_ptr(camera.getMVPMatrix()));
 
 		nodes->Draw();
 		//streets->DrawWays();
