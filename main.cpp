@@ -10,8 +10,9 @@
 #include "ShaderClass.h"
 #include "Camera.h"
 #include "Application.h"
-#include "Nodes.h"
-#include "Streets.h"
+//#include "Nodes.h"
+// #include "Streets.h"
+#include "WorldMap.h"
 
 using json = nlohmann::json;
 const int WIDTH = 1920, HEIGHT = 1080;
@@ -43,7 +44,7 @@ int main()
 	Shader defShader("./shaders/default.vert", "./shaders/default.frag", "default");
 	defShader.Activate();
 
-	std::ifstream input_file("./map_data/cbe1.json");
+	std::ifstream input_file("./map_data/cbe2.json");
 	if(!input_file.is_open()){
 		std::cerr<<"Could not open the json file\n";
 		return 1;
@@ -57,15 +58,18 @@ int main()
 		return 1;
 	}
 	
-	Nodes *nodes = new Nodes(map_data);
-	Streets *streets = new Streets(map_data, nodes);
+	//Nodes *nodes = new Nodes(map_data);
+	//Streets *streets = new Streets(map_data);
+	WorldMap* worldMap = new WorldMap(map_data);
 	
 	//streets->printWayNodes();
 	// std::cout << nodes->min_lon << " " << nodes->max_lon << " " << nodes->min_lat << " " << nodes->max_lat << "\n";
-	Camera camera(nodes->min_lon, nodes->max_lon, nodes->min_lat, nodes->max_lat);
+	Camera camera;
 
 	Application app(window, &camera);
 
+
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	while (!glfwWindowShouldClose(window))
@@ -76,16 +80,20 @@ int main()
 		}
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
+		camera.Inputs(window);
+		camera.updateMatrix();
+
 		defShader.Activate();
 
-		GLint proj_loc = glGetUniformLocation(defShader.ID, "projection");
-		glUniformMatrix4fv(glGetUniformLocation(defShader.ID, "projection"), 1, GL_FALSE,
-			glm::value_ptr(camera.getMVPMatrix()));
+		// GLint proj_loc = glGetUniformLocation(defShader.ID, "mvpMatrix");
+		glUniformMatrix4fv(glGetUniformLocation(defShader.ID, "mvpMatrix"), 1, GL_FALSE,
+			glm::value_ptr(camera.cameraMatrix));
 
-		nodes->Draw();
+		// nodes->Draw();
 		//streets->DrawWays();
-		streets->Draw();
+		//streets->Draw();
+		worldMap->Draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

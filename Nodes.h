@@ -21,8 +21,8 @@ public:
 };
 class Nodes {
 public:
-	double min_lon = std::numeric_limits<double>::max(), max_lon = std::numeric_limits<double>::min(),
-		min_lat = std::numeric_limits<double>::max(), max_lat = std::numeric_limits<double>::min();
+	float min_lon = std::numeric_limits<float>::max(), max_lon = std::numeric_limits<float>::min(),
+		min_lat = std::numeric_limits<float>::max(), max_lat = std::numeric_limits<float>::min();
 	std::vector<Node*>nodes;
 	std::map<long long, Node*>nodeMap;
 	VAO mainVAO;

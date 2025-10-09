@@ -1,61 +1,58 @@
+#define _USE_MATH_DEFINES
 #include "Streets.h"
+#include <cmath>
 
-Way::Way(long long id, std::vector<long long>& nodeIDs, Nodes *nodesInstance)
-	: id(id), nodeIDs(nodeIDs), nodesInstance(nodesInstance)
+const double RADIUS_OF_EARTH = 6378137.0; // In meters
+const double HALF_CIRCUMFERENCE_OF_EARTH = M_PI * RADIUS_OF_EARTH;
+
+Way::Way(long long id, std::vector<long long>& nodeIDs, std::map<long long, glm::dvec3> &nodeVerticesMap,
+	double &min_x, double& max_x, double& min_y, double& max_y)
+	: id(id), nodeIDs(nodeIDs)
 {
-	for (auto nodeID : nodeIDs) {
-		glm::vec3 pos = nodesInstance->nodeMap[nodeID]->vertex;
-		vertices.push_back(pos);
+	double halfWidth = 3.0f;
+	min_x = std::min(min_x, (double)nodeVerticesMap[nodeIDs[0]].x);
+	max_x = std::max(max_x, double(nodeVerticesMap[nodeIDs[0]].x));
+
+	min_y = std::min(min_y, (double)nodeVerticesMap[nodeIDs[0]].y);
+	max_y = std::max(max_y, (double)nodeVerticesMap[nodeIDs[0]].y);
+	for (size_t i = 1; i < nodeIDs.size(); i++) {
+		glm::dvec3 projectedCoords = nodeVerticesMap[nodeIDs[i]];
+
+		min_x = std::min(min_x, (double)projectedCoords.x);
+		max_x = std::max(max_x, double(projectedCoords.x));
+
+		min_y = std::min(min_y, (double)projectedCoords.y);
+		max_y = std::max(max_y, (double)projectedCoords.y);
+
+		glm::dvec3 p1 = nodeVerticesMap[nodeIDs[i-1]];
+		glm::dvec3 p2 = nodeVerticesMap[nodeIDs[i]];
+
+		glm::dvec3 direction = glm::normalize(p2 - p1);
+		glm::dvec3 normal = glm::vec3(-direction.y, direction.x, 0.0f);
+
+		glm::dvec3 left1 = p1 + normal * halfWidth;
+		glm::dvec3 right1 = p1 - normal * halfWidth;
+		glm::dvec3 left2 = p2 + normal * halfWidth;
+		glm::dvec3 right2 = p2 - normal * halfWidth;
+
+		vertices.push_back(left1);
+		vertices.push_back(right1);
+		vertices.push_back(left2);
+		vertices.push_back(right2);
 	}
-	for (int i = 0; i < vertices.size(); i++) {
-		indices.push_back(i);
-	}
-
-	wayVAO.Bind();
-
-	VBO wayVBO(vertices);
-	EBO wayEBO(indices);
-
-	wayVAO.LinkAttrib(wayVBO, 0, 3, GL_FLOAT, sizeof(glm::vec3), (void*)(0));
-	wayVAO.Unbind();
-
-	wayVBO.Unbind();
-	wayEBO.Unbind();
 }
 
-void Way::Draw()
-{
-	wayVAO.Bind();
-	glDrawElements(GL_LINE_STRIP, GLsizei(indices.size()), GL_UNSIGNED_INT, 0);
-	wayVAO.Unbind();
+glm::dvec2 projectLatLongFun(double lat, double lon) {
+	double lat_rad = lat * M_PI / 180.0;
+	double lon_rad = lon * M_PI / 180.0;
+
+	// Perform the Mercator projection
+	double x = lon_rad * RADIUS_OF_EARTH;
+	double y = log(tan(M_PI / 4 + lat_rad / 2)) * RADIUS_OF_EARTH;
+
+	return glm::dvec2(x, y);
 }
-
-Streets::Streets(json& map_data, Nodes* nodesIntance)
-{
-	this->nodesInstance = nodesInstance;
-	int ind = 0;
-	if (map_data.contains("elements")) {
-		for (const auto& element : map_data["elements"]) {
-			if (element["type"] == "way") {
-				try {
-					long long id = std::stoll(element["id"].dump());
-					std::vector<long long> node_arr = element["nodes"];
-
-					Way* currWay = new Way(id, node_arr, nodesIntance);
-					ways.push_back(currWay);
-					GLsizei vertex_offset = vertices.size();
-					vertices.insert(vertices.end(), currWay->vertices.begin(), currWay->vertices.end());
-					for (int i = 0; i < currWay->vertices.size() - 1; i++) {
-						indices.push_back(vertex_offset + i);
-						indices.push_back(vertex_offset + i + 1);
-					}
-				}
-				catch (std::exception& e) {
-					std::cerr << e.what();
-				}
-			}
-		}
-	}
+void Streets::init() {
 	streetVAO.Bind();
 
 	VBO streetVBO(vertices);
@@ -82,14 +79,15 @@ void Streets::printWayNodes()
 
 void Streets::DrawWays()
 {
-	for (auto it : ways) {
+	/*for (auto it : ways) {
 		it->Draw();
-	}
+	}*/
 }
 
 void Streets::Draw()
 {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	streetVAO.Bind();
-	glDrawElements(GL_LINES, GLsizei(indices.size()), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, GLsizei(indices.size()), GL_UNSIGNED_INT, 0);
 	streetVAO.Unbind();
 }

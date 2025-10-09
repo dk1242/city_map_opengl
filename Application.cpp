@@ -41,10 +41,7 @@ void Application::scrollCallback(GLFWwindow* window, double xoffset, double yoff
 
 void Application::handleKey(int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-		// Trigger the rotation on the Camera
-		m_Camera->rotate();
-	}
+	
 }
 
 void Application::handleMouseButton(GLFWwindow* window, int button, int action, int mods)
@@ -62,39 +59,10 @@ void Application::handleMouseButton(GLFWwindow* window, int button, int action, 
 
 void Application::handleCursorPosition(GLFWwindow* window, double xpos, double ypos)
 {
-	if (m_IsPanning) {
-		double dx = xpos - m_LastMouseX;
-		double dy = ypos - m_LastMouseY;
-
-		int window_width, window_height;
-		glfwGetWindowSize(window, &window_width, &window_height);
-
-		float world_width = m_Camera->getRight() - m_Camera->getLeft();
-		float world_height = m_Camera->getTop() - m_Camera->getBottom();
-
-		float world_dx = static_cast<float>(dx * world_width / window_width);
-		float world_dy = static_cast<float>(dy * world_height / window_height);
-
-		m_Camera->pan(-world_dx, world_dy); // Note: Mouse Y is inverted in GLFW
-
-		m_LastMouseX = xpos;
-		m_LastMouseY = ypos;
-	}
+	
 }
 
 void Application::handleScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
-	double mouse_x, mouse_y;
-	glfwGetCursorPos(window, &mouse_x, &mouse_y);
-	int window_width, window_height;
-	glfwGetWindowSize(window, &window_width, &window_height);
-
-	float world_x = m_Camera->getLeft() + static_cast<float>(mouse_x / window_width) * (m_Camera->getRight() - m_Camera->getLeft());
-	float world_y = m_Camera->getBottom() + (1.0f - static_cast<float>(mouse_y / window_height)) * (m_Camera->getTop() - m_Camera->getBottom());
-
-	float zoom_factor = 1.1f;
-	if (yoffset < 0) { // Zoom out
-		zoom_factor = 1.0f / zoom_factor;
-	}
-	m_Camera->zoom(zoom_factor, world_x, world_y);
+	
 }
