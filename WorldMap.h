@@ -3,6 +3,7 @@
 
 #include "Streets.h"
 #include "Buildings.h"
+#include "Camera.h"
 
 class WorldMap {
 public:
@@ -13,10 +14,11 @@ public:
 
 	std::map<long long, glm::dvec3>nodeVerticesMap;
 
+	Camera* cameraObj;
 	Streets* streetsObj;
 	Buildings* buildingsObj;
 
-	WorldMap(json& map_data);
+	WorldMap(json& map_data, Shader* streetShader, Shader *buildingShader, Camera *camera);
 
 	void Draw();
 };

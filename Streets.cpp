@@ -9,13 +9,13 @@ Way::Way(long long id, std::vector<long long>& nodeIDs, std::map<long long, glm:
 	double &min_x, double& max_x, double& min_y, double& max_y)
 	: id(id), nodeIDs(nodeIDs)
 {
-	double halfWidth = 3.0f;
+	double halfWidth = 5.0f;
 	min_x = std::min(min_x, (double)nodeVerticesMap[nodeIDs[0]].x);
 	max_x = std::max(max_x, double(nodeVerticesMap[nodeIDs[0]].x));
 
 	min_y = std::min(min_y, (double)nodeVerticesMap[nodeIDs[0]].y);
 	max_y = std::max(max_y, (double)nodeVerticesMap[nodeIDs[0]].y);
-	for (size_t i = 1; i < nodeIDs.size(); i++) {
+	for (size_t i = 0; i < nodeIDs.size(); i++) {
 		glm::dvec3 projectedCoords = nodeVerticesMap[nodeIDs[i]];
 
 		min_x = std::min(min_x, (double)projectedCoords.x);
@@ -24,21 +24,26 @@ Way::Way(long long id, std::vector<long long>& nodeIDs, std::map<long long, glm:
 		min_y = std::min(min_y, (double)projectedCoords.y);
 		max_y = std::max(max_y, (double)projectedCoords.y);
 
-		glm::dvec3 p1 = nodeVerticesMap[nodeIDs[i-1]];
-		glm::dvec3 p2 = nodeVerticesMap[nodeIDs[i]];
+		glm::dvec3 dirPrev(0.0), dirNext(0.0);
 
-		glm::dvec3 direction = glm::normalize(p2 - p1);
-		glm::dvec3 normal = glm::vec3(-direction.y, direction.x, 0.0f);
+		if (i > 0) {
+			dirPrev = glm::normalize(nodeVerticesMap[nodeIDs[i]] - nodeVerticesMap[nodeIDs[i-1]]);
+		}
+		if (i < nodeIDs.size() - 1) {
+			dirNext = glm::normalize(nodeVerticesMap[nodeIDs[i+1]] - nodeVerticesMap[nodeIDs[i]]);
+		}
+		glm::dvec3 avgDir = glm::normalize(dirPrev + dirNext);
 
-		glm::dvec3 left1 = p1 + normal * halfWidth;
-		glm::dvec3 right1 = p1 - normal * halfWidth;
-		glm::dvec3 left2 = p2 + normal * halfWidth;
-		glm::dvec3 right2 = p2 - normal * halfWidth;
+		if (i == 0)avgDir = dirNext;
+		if (i == nodeIDs.size() - 1)avgDir = dirPrev;
 
-		vertices.push_back(left1);
-		vertices.push_back(right1);
-		vertices.push_back(left2);
-		vertices.push_back(right2);
+		glm::dvec3 n = glm::normalize(glm::dvec3(-avgDir.y, avgDir.x, 0.0));
+
+		glm::dvec3 left = nodeVerticesMap[nodeIDs[i]] - n * halfWidth;
+		glm::dvec3 right = nodeVerticesMap[nodeIDs[i]] + n * halfWidth;
+
+		vertices.push_back(glm::vec3(left));
+		vertices.push_back(right);
 	}
 }
 
@@ -51,6 +56,11 @@ glm::dvec2 projectLatLongFun(double lat, double lon) {
 	double y = log(tan(M_PI / 4 + lat_rad / 2)) * RADIUS_OF_EARTH;
 
 	return glm::dvec2(x, y);
+}
+
+Streets::Streets(Shader* shader)
+{
+	streetShader = shader;
 }
 void Streets::init() {
 	streetVAO.Bind();
@@ -86,7 +96,8 @@ void Streets::DrawWays()
 
 void Streets::Draw()
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	streetVAO.Bind();
 	glDrawElements(GL_TRIANGLES, GLsizei(indices.size()), GL_UNSIGNED_INT, 0);
 	streetVAO.Unbind();

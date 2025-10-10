@@ -65,10 +65,19 @@
     <None Include="map_data\cbe1.json">
       <Filter>Resource Files\map_data</Filter>
     </None>
-    <None Include="shaders\default.frag">
+    <None Include="shaders\streetsShader.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
-    <None Include="shaders\default.vert">
+    <None Include="shaders\streetsShader.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="map_data\cbe2.json">
+      <Filter>Resource Files\map_data</Filter>
+    </None>
+    <None Include="shaders\buildingShader.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="shaders\buildingShader.vert">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

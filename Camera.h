@@ -12,10 +12,11 @@ class Camera {
 public:
     // -438.961 12.6857 126.088
     // 0.274999 - 0.185875 - 0.943306
-    glm::vec3 Position = glm::vec3(-438.961f, 12.6857f, 126.088f/*0.1f, 5.0f, 0.0f*/);
-    glm::vec3 Orientation = glm::vec3(0.274999f, - 0.185875f, - 0.943306f/*0.0f, 0.0f, -1.0f*/);
+    glm::vec3 Position = glm::vec3(-438.961f, 1.0f, 126.088f/*0.1f, 5.0f, 0.0f*/);
+    glm::vec3 cameraOrientation = glm::vec3(/*0.274999f, - 0.185875f, - 0.943306f*/0.0f, 0.0f, -1.0f);
+    glm::vec3 playerOrientation = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 RightDir = glm::normalize(glm::cross(Orientation, Up));
+    glm::vec3 RightDir = glm::normalize(glm::cross(cameraOrientation, Up));
 
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);

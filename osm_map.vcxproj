@@ -167,8 +167,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="map_data\cbe1.json" />
-    <None Include="shaders\default.frag" />
-    <None Include="shaders\default.vert" />
+    <None Include="map_data\cbe2.json" />
+    <None Include="shaders\buildingShader.frag" />
+    <None Include="shaders\buildingShader.vert" />
+    <None Include="shaders\streetsShader.frag" />
+    <None Include="shaders\streetsShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />

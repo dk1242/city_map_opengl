@@ -14,7 +14,7 @@ void Camera::updateMatrix()
 	// Makes camera look in the right direction from the right position
 	//std::cout << Position.x<< " " << Position.y << " " << Position.z << "\n";
 	//std::cout << Orientation.x << " " << Orientation.y << " " << Orientation.z << "\n";
-	view = glm::lookAt(Position, Position + Orientation, Up);
+	view = glm::lookAt(Position, Position + cameraOrientation, Up);
 	// Adds perspective to the scene
 	projection = glm::perspective(glm::radians(45.0f), (float)1920.0f / 1080.0f, 0.1f, 10000.0f);
 
@@ -26,19 +26,19 @@ void Camera::Inputs(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		Position += speed * Orientation;
+		Position += speed * playerOrientation;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		Position += speed * -glm::normalize(glm::cross(Orientation, Up));
+		Position += speed * -glm::normalize(glm::cross(playerOrientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		Position += speed * -Orientation;
+		Position += speed * -playerOrientation;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		Position += speed * glm::normalize(glm::cross(Orientation, Up));
+		Position += speed * glm::normalize(glm::cross(playerOrientation, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 	{
@@ -78,21 +78,25 @@ void Camera::Inputs(GLFWwindow *window)
 		// and then "transforms" them into degrees
 		float rotX = sensitivity * (float)(mouseY - (height / 2.0)) / height;
 		float rotY = sensitivity * (float)(mouseX - (width / 2.0)) / width;
-
 		// Calculates upcoming vertical change in the Orientation
-		glm::vec3 newOrientation = glm::rotate(Orientation, glm::radians(-rotX), glm::normalize(glm::cross(Orientation, Up)));
+		glm::vec3 newCameraOrientation = glm::rotate(cameraOrientation, glm::radians(-rotX), glm::normalize(glm::cross(cameraOrientation, Up)));
 
 		// Decides whether or not the next vertical Orientation is legal or not
-		if (abs(glm::angle(newOrientation, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
+		if (abs(glm::angle(newCameraOrientation, Up) - glm::radians(90.0f)) <= glm::radians(85.0f))
 		{
-			Orientation = newOrientation;
+			cameraOrientation = newCameraOrientation;
 		}
 
 		// Rotates the Orientation left and right
-		Orientation = glm::rotate(Orientation, glm::radians(-rotY), Up);
-		Orientation = glm::normalize(Orientation);
-		RightDir = glm::normalize(glm::cross(Orientation, Up));
-		Up = glm::normalize(glm::cross(RightDir, Orientation));
+		//Orientation = glm::rotate(Orientation, glm::radians(-rotY), Up);
+		//Orientation = glm::normalize(Orientation);
+		playerOrientation = glm::rotate(playerOrientation, glm::radians(static_cast<float>(-rotY)), Up);
+		cameraOrientation = glm::rotate(cameraOrientation, glm::radians(static_cast<float>(-rotY)), Up);
+
+		playerOrientation = glm::normalize(playerOrientation);
+		cameraOrientation = glm::normalize(cameraOrientation);
+		/*RightDir = glm::normalize(glm::cross(Orientation, Up));
+		Up = glm::normalize(glm::cross(RightDir, Orientation));*/
 
 		// Sets mouse cursor to the middle of the screen so that it doesn't end up roaming around
 		glfwSetCursorPos(window, (width / 2), (height / 2));

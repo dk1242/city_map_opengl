@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include "json.hpp"
 #include "VAO.h"
+#include "ShaderClass.h"
 
 using json = nlohmann::json;
 
@@ -30,13 +31,18 @@ public:
 
 class Streets {
 public:
-	
 	std::vector<Way*>ways;
 	std::vector<glm::vec3>vertices;
+	std::vector<glm::vec3>normals; // will add later
 	std::vector<GLuint>indices;
 	std::map<long long, glm::dvec3>nodeVerticesMap;
 
+	glm::mat4 model = glm::mat4(1.0f);
+
 	VAO streetVAO;
+	Shader* streetShader;
+
+	Streets(Shader* shader);
 
 	void init();
 	void printWayNodes();
